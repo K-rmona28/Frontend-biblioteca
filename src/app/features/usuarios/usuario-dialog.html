@@ -1,37 +1,50 @@
-<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo usuario' : 'Editar usuario' }}</h2>
-<mat-dialog-content class="dialog-body">
-  <form [formGroup]="form" class="grid">
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo' : 'Editar' }} Usuario</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="d-flex flex-column gap-3 mt-2">
+
     <mat-form-field appearance="outline">
-      <mat-label>Nombre completo</mat-label>
-      <input matInput formControlName="nombre_completo" />
-    </mat-form-field>
-    <mat-form-field appearance="outline">
-      <mat-label>Nombre de usuario</mat-label>
-      <input matInput formControlName="nombre_usuario" autocomplete="username" />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="span-2">
-      <mat-label>Email</mat-label>
-      <input matInput type="email" formControlName="email" />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="span-2">
-      <mat-label>Contraseña</mat-label>
-      <input matInput type="password" formControlName="clave" />
-      @if (data.mode === 'edit') {
-        <mat-hint>Dejar vacío para no cambiar</mat-hint>
+      <mat-label>Nombre Completo</mat-label>
+      <input matInput formControlName="nombre" placeholder="Ej: Juan Pérez">
+      @if (form.controls.nombre.hasError('required')) {
+        <mat-error>El nombre es obligatorio</mat-error>
       }
     </mat-form-field>
+
     <mat-form-field appearance="outline">
-      <mat-label>Rol</mat-label>
-      <input matInput formControlName="rol" />
+      <mat-label>Correo Electrónico</mat-label>
+      <input matInput type="email" formControlName="email" placeholder="Ej: juan@correo.com">
+      @if (form.controls.email.hasError('required')) {
+        <mat-error>El correo es obligatorio</mat-error>
+      }
+      @if (form.controls.email.hasError('email')) {
+        <mat-error>Debe ingresar un formato de correo válido</mat-error>
+      }
     </mat-form-field>
+
     <mat-form-field appearance="outline">
-      <mat-label>Teléfono</mat-label>
-      <input matInput formControlName="telefono" />
+      <mat-label>Rol del Sistema</mat-label>
+      <mat-select formControlName="rol">
+        <mat-option value="Administrador">Administrador</mat-option>
+        <mat-option value="Bibliotecario">Bibliotecario</mat-option>
+        <mat-option value="Lector">Lector</mat-option>
+      </mat-select>
     </mat-form-field>
-    <mat-checkbox formControlName="activo" class="span-2">Activo</mat-checkbox>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Estado de Cuenta</mat-label>
+      <mat-select formControlName="activo">
+        <mat-option [value]="true">Activo</mat-option>
+        <mat-option [value]="false">Inactivo</mat-option>
+      </mat-select>
+    </mat-form-field>
+
   </form>
 </mat-dialog-content>
+
 <mat-dialog-actions align="end">
-  <button mat-button type="button" (click)="cancel()">Cancelar</button>
-  <button mat-flat-button color="primary" type="button" (click)="save()">Guardar</button>
+  <button mat-button (click)="cancel()">Cancelar</button>
+  <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="save()">
+    Guardar
+  </button>
 </mat-dialog-actions>

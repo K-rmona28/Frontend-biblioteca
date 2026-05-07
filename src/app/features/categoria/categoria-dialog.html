@@ -1,0 +1,27 @@
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nueva Categoría' : 'Editar Categoría' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" style="display: flex; flex-direction: column; gap: 16px; padding-top: 10px;">
+    
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre de la Categoría</mat-label>
+      <input matInput formControlName="nombre" placeholder="Ej. Ciencia Ficción, Historia">
+      @if (form.controls.nombre.hasError('required')) {
+        <mat-error>El nombre es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Descripción</mat-label>
+      <textarea matInput formControlName="descripcion" placeholder="Opcional: Breve descripción del género o temática"></textarea>
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancelar</button>
+  <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="save()">
+    {{ data.mode === 'create' ? 'Guardar' : 'Actualizar' }}
+  </button>
+</mat-dialog-actions>

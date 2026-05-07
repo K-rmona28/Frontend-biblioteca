@@ -1,6 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,14 +9,13 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { filter } from 'rxjs/operators';
 
-import { UsuarioService } from '../../core/services/usuario.service';
-import { UsuarioDialogComponent } from './usuario-dialog';
+import { AutorService } from '../../core/services/autor.service';
+import { AutorRead } from '../../models/api.models';
+import { AutorDialogComponent, AutorDialogData } from './autor-dialog';
 
 @Component({
-  selector: 'app-usuario-list',
-  standalone: true,
+  selector: 'app-autor-list',
   imports: [
-    CommonModule,
     MatTableModule,
     MatPaginatorModule,
     MatButtonModule,
@@ -26,16 +24,16 @@ import { UsuarioDialogComponent } from './usuario-dialog';
     MatProgressSpinnerModule,
     MatSnackBarModule,
   ],
-  templateUrl: './usuario-list.html',
-  styleUrl: './usuario-list.scss',
+  templateUrl: './autor-list.html',
+  styleUrl: './autor-list.scss',
 })
-export class UsuarioListComponent implements AfterViewInit {
-  private readonly usuarioService = inject(UsuarioService);
+export class AutorListComponent implements AfterViewInit {
+  private readonly autorService = inject(AutorService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
-  readonly displayedColumns = ['id_usuario', 'nombre', 'email', 'rol', 'activo', 'acciones'];
-  readonly dataSource = new MatTableDataSource<any>([]);
+  readonly displayedColumns = ['id_autor', 'nombre', 'nacionalidad', 'acciones'];
+  readonly dataSource = new MatTableDataSource<AutorRead>([]);
   loading = true;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -50,8 +48,8 @@ export class UsuarioListComponent implements AfterViewInit {
 
   reload(): void {
     this.loading = true;
-    this.usuarioService.list().subscribe({
-      next: (rows: any) => {
+    this.autorService.list().subscribe({
+      next: (rows) => {
         this.dataSource.data = rows;
         this.loading = false;
       },
@@ -63,29 +61,26 @@ export class UsuarioListComponent implements AfterViewInit {
   }
 
   nuevo(): void {
-    this.openDialog('create');
+    this.openDialog({ mode: 'create' });
   }
 
-  editar(row: any): void {
-    this.openDialog('edit', row);
+  editar(row: AutorRead): void {
+    this.openDialog({ mode: 'edit', row });
   }
 
-  private openDialog(mode: 'create' | 'edit', row?: any): void {
+  private openDialog(data: AutorDialogData): void {
     this.dialog
-      .open(UsuarioDialogComponent, { width: '500px', data: { mode, row } })
+      .open(AutorDialogComponent, { width: '450px', data })
       .afterClosed()
       .pipe(filter(Boolean))
       .subscribe(() => this.reload());
   }
 
-  eliminar(row: any): void {
-    const nombreUsuario = row.nombre || row.email || 'Usuario';
-    if (!confirm(`¿Eliminar al usuario "${nombreUsuario}"?`)) return;
-    
-    const id = row.id_usuario || row.id;
-    this.usuarioService.delete(id).subscribe({
+  eliminar(row: AutorRead): void {
+    if (!confirm(`¿Eliminar al autor "${row.nombre}"?`)) return;
+    this.autorService.delete(row.id_autor).subscribe({
       next: () => {
-        this.snack.open('Usuario eliminado con éxito', 'OK', { duration: 3000 });
+        this.snack.open('Autor eliminado con éxito', 'OK', { duration: 3000 });
         this.reload();
       },
       error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
@@ -95,7 +90,7 @@ export class UsuarioListComponent implements AfterViewInit {
   private msg(err: HttpErrorResponse): string {
     const d = err.error?.detail;
     if (typeof d === 'string') return d;
-    if (Array.isArray(d)) return d.map((x: any) => x.msg ?? JSON.stringify(x)).join('; ');
+    if (Array.isArray(d)) return d.map((x) => x.msg ?? JSON.stringify(x)).join('; ');
     return err.message;
   }
 }

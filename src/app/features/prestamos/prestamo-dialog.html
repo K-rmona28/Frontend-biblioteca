@@ -1,0 +1,60 @@
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo' : 'Editar' }} Préstamo</h2>
+
+<mat-dialog-content>
+  @if (loadingData) {
+    <div class="d-flex justify-content-center my-3">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else {
+    <form [formGroup]="form" class="d-flex flex-column gap-3 mt-2">
+      
+      <mat-form-field appearance="outline">
+        <mat-label>Usuario</mat-label>
+        <mat-select formControlName="id_usuario">
+          @for (usr of usuarios; track usr.id_usuario) {
+            <mat-option [value]="usr.id_usuario">{{ usr.nombre }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.id_usuario.hasError('required')) {
+          <mat-error>El usuario es obligatorio</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Libro</mat-label>
+        <mat-select formControlName="id_libro">
+          @for (libro of libros; track libro.id_libro) {
+            <mat-option [value]="libro.id_libro">{{ libro.titulo }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.id_libro.hasError('required')) {
+          <mat-error>El libro es obligatorio</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha de Préstamo</mat-label>
+        <input matInput type="date" formControlName="fecha_prestamo">
+        @if (form.controls.fecha_prestamo.hasError('required')) {
+          <mat-error>La fecha de préstamo es requerida</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha Límite de Entrega</mat-label>
+        <input matInput type="date" formControlName="fecha_devolucion_esperada">
+        @if (form.controls.fecha_devolucion_esperada.hasError('required')) {
+          <mat-error>La fecha límite es requerida</mat-error>
+        }
+      </mat-form-field>
+
+    </form>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancelar</button>
+  <button mat-flat-button color="primary" [disabled]="form.invalid || loadingData" (click)="save()">
+    Guardar
+  </button>
+</mat-dialog-actions>

@@ -1,8 +1,8 @@
 <div class="container-fluid my-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Listado de Usuarios</h2>
+    <h2>Listado de Editoriales</h2>
     <button mat-flat-button color="primary" (click)="nuevo()">
-      <mat-icon>person_add</mat-icon> Nuevo Usuario
+      <mat-icon>add</mat-icon> Nueva Editorial
     </button>
   </div>
 
@@ -14,9 +14,9 @@
     <div class="mat-elevation-z8 table-responsive">
       <table mat-table [dataSource]="dataSource" class="w-100">
 
-        <ng-container matColumnDef="id_usuario">
+        <ng-container matColumnDef="id_editorial">
           <th mat-header-cell *matHeaderCellDef> ID </th>
-          <td mat-cell *matCellDef="let element"> {{ element.id_usuario }} </td>
+          <td mat-cell *matCellDef="let element"> {{ element.id_editorial }} </td>
         </ng-container>
 
         <ng-container matColumnDef="nombre">
@@ -24,27 +24,9 @@
           <td mat-cell *matCellDef="let element"> {{ element.nombre }} </td>
         </ng-container>
 
-        <ng-container matColumnDef="email">
-          <th mat-header-cell *matHeaderCellDef> Correo Electrónico </th>
-          <td mat-cell *matCellDef="let element"> {{ element.email }} </td>
-        </ng-container>
-
-        <ng-container matColumnDef="rol">
-          <th mat-header-cell *matHeaderCellDef> Rol </th>
-          <td mat-cell *matCellDef="let element"> 
-            <span class="badge text-bg-secondary">{{ element.rol }}</span> 
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="activo">
-          <th mat-header-cell *matHeaderCellDef> Estado </th>
-          <td mat-cell *matCellDef="let element">
-            @if (element.activo) {
-              <span class="badge text-bg-success">Activo</span>
-            } @else {
-              <span class="badge text-bg-danger">Inactivo</span>
-            }
-          </td>
+        <ng-container matColumnDef="pais">
+          <th mat-header-cell *matHeaderCellDef> País </th>
+          <td mat-cell *matCellDef="let element"> {{ element.pais || 'No especificado' }} </td>
         </ng-container>
 
         <ng-container matColumnDef="acciones">

@@ -19,6 +19,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/usuarios/usuario-list').then((m) => m.UsuarioListComponent),
       },
+      {
+        path: 'prestamos',
+        loadComponent: () =>
+          import('./features/prestamos/prestamo-list').then((m) => m.PrestamoListComponent), // 👈 Apuntando a la carpeta en plural "prestamos"
+      },
+      {
+        path: 'multas',
+        loadComponent: () =>
+          import('./features/multas/multa-list').then((m) => m.MultaListComponent), // 👈 Ruta de multas
+      },
     ],
   },
   { path: '**', redirectTo: 'login' },

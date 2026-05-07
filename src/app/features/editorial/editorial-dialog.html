@@ -1,0 +1,23 @@
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nueva' : 'Editar' }} Editorial</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="d-flex flex-column gap-3 mt-2">
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre de la Editorial</mat-label>
+      <input matInput formControlName="nombre" placeholder="Ej: Alfaguara">
+      @if (form.controls.nombre.hasError('required')) {
+        <mat-error>El nombre es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>País de Origen</mat-label>
+      <input matInput formControlName="pais" placeholder="Ej: España">
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancelar</button>
+  <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="save()">Guardar</button>
+</mat-dialog-actions>

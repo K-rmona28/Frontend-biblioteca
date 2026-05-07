@@ -1,0 +1,63 @@
+<div class="page-head">
+  <h1>Préstamos</h1>
+  <button mat-flat-button color="primary" type="button" (click)="nuevo()">
+    <mat-icon>add</mat-icon>
+    Nuevo Préstamo
+  </button>
+</div>
+
+@if (loading) {
+  <div class="loading">
+    <mat-spinner />
+  </div>
+} @else {
+  <div class="table-wrap mat-elevation-z2">
+    <table mat-table [dataSource]="dataSource">
+      
+      <ng-container matColumnDef="id_prestamo">
+        <th mat-header-cell *matHeaderCellDef>ID Préstamo</th>
+        <td mat-cell *matCellDef="let r">{{ r.id_prestamo }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="id_usuario">
+        <th mat-header-cell *matHeaderCellDef>Usuario (ID)</th>
+        <td mat-cell *matCellDef="let r">{{ r.id_usuario }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="fecha_prestamo">
+        <th mat-header-cell *matHeaderCellDef>Fecha Préstamo</th>
+        <td mat-cell *matCellDef="let r">{{ r.fecha_prestamo | date:'dd/MM/yyyy' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="fecha_devolucion_propuesta">
+        <th mat-header-cell *matHeaderCellDef>Devolución Esperada</th>
+        <td mat-cell *matCellDef="let r">{{ r.fecha_devolucion_propuesta | date:'dd/MM/yyyy' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let r">
+          <span class="badge" [class]="r.estado.toLowerCase()">
+            {{ r.estado }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let r" class="actions">
+          <button mat-icon-button type="button" (click)="editar(r)" aria-label="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button type="button" (click)="eliminar(r)" aria-label="Eliminar">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+    <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons />
+  </div>
+}

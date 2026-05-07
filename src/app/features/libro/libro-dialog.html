@@ -1,0 +1,65 @@
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Agregar Nuevo Libro' : 'Editar Libro' }}</h2>
+
+<mat-dialog-content>
+  @if (loadingData) {
+    <div style="display: flex; justify-content: center; padding: 20px;">
+      <p>Cargando información requerida...</p>
+    </div>
+  } @else {
+    <form [formGroup]="form" style="display: flex; flex-direction: column; gap: 16px; padding-top: 10px;">
+      
+      <mat-form-field appearance="outline">
+        <mat-label>Título del Libro</mat-label>
+        <input matInput formControlName="titulo" placeholder="Ej. Cien Años de Soledad">
+        @if (form.controls.titulo.hasError('required')) {
+          <mat-error>El título es obligatorio</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>ISBN</mat-label>
+        <input matInput formControlName="isbn" placeholder="Ej. 978-3-16-148410-0">
+        @if (form.controls.isbn.hasError('required')) {
+          <mat-error>El ISBN es obligatorio</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Editorial</mat-label>
+        <mat-select formControlName="id_editorial">
+          @for (editorial of editoriales; track editorial.id_editorial) {
+            <mat-option [value]="editorial.id_editorial">{{ editorial.nombre }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.id_editorial.hasError('required')) {
+          <mat-error>Debes seleccionar una Editorial</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Categoría</mat-label>
+        <mat-select formControlName="id_categoria">
+          @for (cat of categorias; track cat.id_categoria) {
+            <mat-option [value]="cat.id_categoria">{{ cat.nombre }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.id_categoria.hasError('required')) {
+          <mat-error>Debes seleccionar una Categoría</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Año de Publicación</mat-label>
+        <input matInput type="number" formControlName="anio_publicacion" placeholder="Ej. 1967">
+      </mat-form-field>
+
+    </form>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancelar</button>
+  <button mat-flat-button color="primary" [disabled]="form.invalid || loadingData" (click)="save()">
+    {{ data.mode === 'create' ? 'Guardar' : 'Actualizar' }}
+  </button>
+</mat-dialog-actions>

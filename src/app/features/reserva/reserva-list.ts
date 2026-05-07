@@ -10,11 +10,11 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { filter } from 'rxjs/operators';
 
-import { UsuarioService } from '../../core/services/usuario.service';
-import { UsuarioDialogComponent } from './usuario-dialog';
+import { ReservaService, Reserva } from '../../core/services/reserva.service';
+import { ReservaDialogComponent } from './reserva-dialog';
 
 @Component({
-  selector: 'app-usuario-list',
+  selector: 'app-reserva-list',
   standalone: true,
   imports: [
     CommonModule,
@@ -26,16 +26,16 @@ import { UsuarioDialogComponent } from './usuario-dialog';
     MatProgressSpinnerModule,
     MatSnackBarModule,
   ],
-  templateUrl: './usuario-list.html',
-  styleUrl: './usuario-list.scss',
+  templateUrl: './reserva-list.html',
+  styleUrl: './reserva-list.scss',
 })
-export class UsuarioListComponent implements AfterViewInit {
-  private readonly usuarioService = inject(UsuarioService);
+export class ReservaListComponent implements AfterViewInit {
+  private readonly reservaService = inject(ReservaService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
-  readonly displayedColumns = ['id_usuario', 'nombre', 'email', 'rol', 'activo', 'acciones'];
-  readonly dataSource = new MatTableDataSource<any>([]);
+  readonly displayedColumns = ['id_reserva', 'id_usuario', 'id_libro', 'fecha_reserva', 'estado', 'acciones'];
+  readonly dataSource = new MatTableDataSource<Reserva>([]);
   loading = true;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -50,8 +50,8 @@ export class UsuarioListComponent implements AfterViewInit {
 
   reload(): void {
     this.loading = true;
-    this.usuarioService.list().subscribe({
-      next: (rows: any) => {
+    this.reservaService.list().subscribe({
+      next: (rows) => {
         this.dataSource.data = rows;
         this.loading = false;
       },
@@ -66,26 +66,27 @@ export class UsuarioListComponent implements AfterViewInit {
     this.openDialog('create');
   }
 
-  editar(row: any): void {
+  editar(row: Reserva): void {
     this.openDialog('edit', row);
   }
 
-  private openDialog(mode: 'create' | 'edit', row?: any): void {
+  private openDialog(mode: 'create' | 'edit', row?: Reserva): void {
     this.dialog
-      .open(UsuarioDialogComponent, { width: '500px', data: { mode, row } })
+      .open(ReservaDialogComponent, { width: '500px', data: { mode, row } })
       .afterClosed()
       .pipe(filter(Boolean))
       .subscribe(() => this.reload());
   }
 
-  eliminar(row: any): void {
-    const nombreUsuario = row.nombre || row.email || 'Usuario';
-    if (!confirm(`¿Eliminar al usuario "${nombreUsuario}"?`)) return;
-    
-    const id = row.id_usuario || row.id;
-    this.usuarioService.delete(id).subscribe({
+  eliminar(row: Reserva): void {
+    if (!confirm(`¿Eliminar la reserva ID ${row.id_reserva}?`)) return;
+
+    const id = row.id_reserva;
+    if (!id) return;
+
+    this.reservaService.delete(id.toString()).subscribe({
       next: () => {
-        this.snack.open('Usuario eliminado con éxito', 'OK', { duration: 3000 });
+        this.snack.open('Reserva eliminada con éxito', 'OK', { duration: 3000 });
         this.reload();
       },
       error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),

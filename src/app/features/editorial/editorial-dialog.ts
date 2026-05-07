@@ -5,18 +5,19 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { UsuarioService } from '../../core/services/usuario.service';
+// Ruta corregida apuntando a tu servicio real con "s" al final
+import { EditorialService } from '../../core/services/editorial.service';
+import { Editorial } from './editorial-list';
 
-export interface UsuarioDialogData {
+export interface EditorialDialogData {
   mode: 'create' | 'edit';
-  row?: any;
+  row?: Editorial;
 }
 
 @Component({
-  selector: 'app-usuario-dialog',
+  selector: 'app-editorial-dialog',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -24,34 +25,28 @@ export interface UsuarioDialogData {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule,
     MatSnackBarModule,
   ],
-  templateUrl: './usuario-dialog.html',
+  templateUrl: './editorial-dialog.html',
 })
-export class UsuarioDialogComponent implements OnInit {
+export class EditorialDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly usuarioService = inject(UsuarioService);
-  private readonly dialogRef = inject(MatDialogRef<UsuarioDialogComponent, boolean>);
+  private readonly editorialService = inject(EditorialService);
+  private readonly dialogRef = inject(MatDialogRef<EditorialDialogComponent, boolean>);
   private readonly snack = inject(MatSnackBar);
 
-  readonly data = inject<UsuarioDialogData>(MAT_DIALOG_DATA);
+  readonly data = inject<EditorialDialogData>(MAT_DIALOG_DATA);
 
   readonly form = this.fb.nonNullable.group({
     nombre: ['', [Validators.required, Validators.maxLength(100)]],
-    email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
-    rol: ['Lector', [Validators.required]],
-    activo: [true, [Validators.required]],
+    pais: ['', [Validators.maxLength(50)]],
   });
 
   ngOnInit(): void {
     if (this.data.mode === 'edit' && this.data.row) {
-      const r = this.data.row;
       this.form.patchValue({
-        nombre: r.nombre || '',
-        email: r.email || '',
-        rol: r.rol || 'Lector',
-        activo: r.activo !== undefined ? r.activo : true,
+        nombre: this.data.row.nombre,
+        pais: this.data.row.pais || '',
       });
     }
   }
@@ -66,35 +61,22 @@ export class UsuarioDialogComponent implements OnInit {
       return;
     }
 
-    const raw = this.form.getRawValue();
+    const payload = this.form.getRawValue();
 
     if (this.data.mode === 'create') {
-      const payload: any = {
-        nombre: raw.nombre,
-        email: raw.email,
-        rol: raw.rol,
-        activo: raw.activo
-      };
-
-      this.usuarioService.create(payload).subscribe({
+      this.editorialService.create(payload).subscribe({
         next: () => this.dialogRef.close(true),
         error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
       });
-      return;
+    } else if (this.data.mode === 'edit' && this.data.row?.id_editorial) {
+      // Convertimos el ID a string usando .toString() para que coincida con tu servicio
+      const idString = this.data.row.id_editorial.toString();
+      
+      this.editorialService.update(idString, payload).subscribe({
+        next: () => this.dialogRef.close(true),
+        error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
+      });
     }
-
-    const id = this.data.row.id_usuario || this.data.row.id;
-    const body: any = {
-      nombre: raw.nombre,
-      email: raw.email,
-      rol: raw.rol,
-      activo: raw.activo
-    };
-
-    this.usuarioService.update(id, body).subscribe({
-      next: () => this.dialogRef.close(true),
-      error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
-    });
   }
 
   private msg(err: HttpErrorResponse): string {

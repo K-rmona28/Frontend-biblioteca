@@ -10,11 +10,18 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { filter } from 'rxjs/operators';
 
-import { UsuarioService } from '../../core/services/usuario.service';
-import { UsuarioDialogComponent } from './usuario-dialog';
+// Asegúrate de que la ruta a tu servicio de editorial sea la correcta
+import { EditorialService } from '../../core/services/editorial.service';
+import { EditorialDialogComponent } from './editorial-dialog';
+
+export interface Editorial {
+  id_editorial?: number;
+  nombre: string;
+  pais?: string;
+}
 
 @Component({
-  selector: 'app-usuario-list',
+  selector: 'app-editorial-list',
   standalone: true,
   imports: [
     CommonModule,
@@ -26,16 +33,16 @@ import { UsuarioDialogComponent } from './usuario-dialog';
     MatProgressSpinnerModule,
     MatSnackBarModule,
   ],
-  templateUrl: './usuario-list.html',
-  styleUrl: './usuario-list.scss',
+  templateUrl: './editorial-list.html',
+  styleUrl: './editorial-list.scss',
 })
-export class UsuarioListComponent implements AfterViewInit {
-  private readonly usuarioService = inject(UsuarioService);
+export class EditorialListComponent implements AfterViewInit {
+  private readonly editorialService = inject(EditorialService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
-  readonly displayedColumns = ['id_usuario', 'nombre', 'email', 'rol', 'activo', 'acciones'];
-  readonly dataSource = new MatTableDataSource<any>([]);
+  readonly displayedColumns = ['id_editorial', 'nombre', 'pais', 'acciones'];
+  readonly dataSource = new MatTableDataSource<Editorial>([]);
   loading = true;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -50,7 +57,7 @@ export class UsuarioListComponent implements AfterViewInit {
 
   reload(): void {
     this.loading = true;
-    this.usuarioService.list().subscribe({
+    this.editorialService.list().subscribe({
       next: (rows: any) => {
         this.dataSource.data = rows;
         this.loading = false;
@@ -66,26 +73,27 @@ export class UsuarioListComponent implements AfterViewInit {
     this.openDialog('create');
   }
 
-  editar(row: any): void {
+  editar(row: Editorial): void {
     this.openDialog('edit', row);
   }
 
-  private openDialog(mode: 'create' | 'edit', row?: any): void {
+  private openDialog(mode: 'create' | 'edit', row?: Editorial): void {
     this.dialog
-      .open(UsuarioDialogComponent, { width: '500px', data: { mode, row } })
+      .open(EditorialDialogComponent, { width: '500px', data: { mode, row } })
       .afterClosed()
       .pipe(filter(Boolean))
       .subscribe(() => this.reload());
   }
 
-  eliminar(row: any): void {
-    const nombreUsuario = row.nombre || row.email || 'Usuario';
-    if (!confirm(`¿Eliminar al usuario "${nombreUsuario}"?`)) return;
+  eliminar(row: Editorial): void {
+    if (!confirm(`¿Eliminar la editorial "${row.nombre}"?`)) return;
     
-    const id = row.id_usuario || row.id;
-    this.usuarioService.delete(id).subscribe({
+    const id = row.id_editorial;
+    if (!id) return;
+
+    this.editorialService.delete(id).subscribe({
       next: () => {
-        this.snack.open('Usuario eliminado con éxito', 'OK', { duration: 3000 });
+        this.snack.open('Editorial eliminada con éxito', 'OK', { duration: 3000 });
         this.reload();
       },
       error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),

@@ -20,22 +20,48 @@
         </div>
       }
     </div>
+    
     <mat-nav-list class="nav-list">
-      @for (item of nav; track item.path) {
-        <a
-          mat-list-item
-          class="nav-item"
-          [routerLink]="item.path"
-          routerLinkActive="active-link"
-          [matTooltip]="sidebarCollapsed() ? item.label : ''"
-          matTooltipPosition="right"
-          [matTooltipDisabled]="!sidebarCollapsed()"
-        >
-          <mat-icon matListItemIcon class="nav-item__icon">{{ item.icon }}</mat-icon>
-          <span matListItemTitle class="nav-label">{{ item.label }}</span>
-        </a>
-      }
+      <a
+        mat-list-item
+        class="nav-item"
+        routerLink="usuarios"
+        routerLinkActive="active-link"
+        [matTooltip]="sidebarCollapsed() ? 'Usuarios' : ''"
+        matTooltipPosition="right"
+        [matTooltipDisabled]="!sidebarCollapsed()"
+      >
+        <mat-icon matListItemIcon class="nav-item__icon">people</mat-icon>
+        <span matListItemTitle class="nav-label">Usuarios</span>
+      </a>
+
+      <a
+        mat-list-item
+        class="nav-item"
+        routerLink="prestamos"
+        routerLinkActive="active-link"
+        [matTooltip]="sidebarCollapsed() ? 'Préstamos' : ''"
+        matTooltipPosition="right"
+        [matTooltipDisabled]="!sidebarCollapsed()"
+      >
+        <mat-icon matListItemIcon class="nav-item__icon">book</mat-icon>
+        <span matListItemTitle class="nav-label">Préstamos</span>
+      </a>
+
+      <a
+        mat-list-item
+        class="nav-item"
+        routerLink="multas"
+        routerLinkActive="active-link"
+        [matTooltip]="sidebarCollapsed() ? 'Multas' : ''"
+        matTooltipPosition="right"
+        [matTooltipDisabled]="!sidebarCollapsed()"
+      >
+        <mat-icon matListItemIcon class="nav-item__icon">gavel</mat-icon>
+        <span matListItemTitle class="nav-label">Multas</span>
+      </a>
     </mat-nav-list>
+
     <div class="nav-footer">
       <button
         mat-stroked-button

@@ -1,0 +1,36 @@
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Asociar' : 'Editar' }} Detalle de Préstamo</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="d-flex flex-column gap-3 mt-2">
+    
+    <mat-form-field appearance="outline">
+      <mat-label>Préstamo (ID)</mat-label>
+      <mat-select formControlName="id_prestamo">
+        @for (prestamo of prestamos; track prestamo.id_prestamo) {
+          <mat-option [value]="prestamo.id_prestamo">Préstamo #{{ prestamo.id_prestamo }} (Usuario: {{ prestamo.id_usuario }})</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.id_prestamo.hasError('required')) {
+        <mat-error>El préstamo es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Ejemplar (Código)</mat-label>
+      <mat-select formControlName="id_ejemplar">
+        @for (ejemplar of ejemplares; track ejemplar.id_ejemplar) {
+          <mat-option [value]="ejemplar.id_ejemplar">{{ ejemplar.codigo_inventario }} (ID: {{ ejemplar.id_ejemplar }})</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.id_ejemplar.hasError('required')) {
+        <mat-error>El ejemplar es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancelar</button>
+  <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="save()">Guardar</button>
+</mat-dialog-actions>

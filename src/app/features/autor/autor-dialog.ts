@@ -1,57 +1,52 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { UsuarioService } from '../../core/services/usuario.service';
+import { AutorService } from '../../core/services/autor.service';
+import { AutorRead, AutorUpdate } from '../../models/api.models';
 
-export interface UsuarioDialogData {
+export interface AutorDialogData {
   mode: 'create' | 'edit';
-  row?: any;
+  row?: AutorRead;
 }
 
 @Component({
-  selector: 'app-usuario-dialog',
-  standalone: true,
+  selector: 'app-autor-dialog',
   imports: [
     ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule,
     MatSnackBarModule,
   ],
-  templateUrl: './usuario-dialog.html',
+  templateUrl: './autor-dialog.html',
 })
-export class UsuarioDialogComponent implements OnInit {
+export class AutorDialogComponent {
   private readonly fb = inject(FormBuilder);
-  private readonly usuarioService = inject(UsuarioService);
-  private readonly dialogRef = inject(MatDialogRef<UsuarioDialogComponent, boolean>);
+  private readonly autorService = inject(AutorService);
+  private readonly dialogRef = inject(MatDialogRef<AutorDialogComponent, boolean>);
   private readonly snack = inject(MatSnackBar);
 
-  readonly data = inject<UsuarioDialogData>(MAT_DIALOG_DATA);
+  readonly data = inject<AutorDialogData>(MAT_DIALOG_DATA);
 
   readonly form = this.fb.nonNullable.group({
     nombre: ['', [Validators.required, Validators.maxLength(100)]],
-    email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
-    rol: ['Lector', [Validators.required]],
-    activo: [true, [Validators.required]],
+    nacionalidad: ['', [Validators.maxLength(100)]],
+    fecha_nacimiento: ['', [Validators.maxLength(10)]],
   });
 
-  ngOnInit(): void {
+  constructor() {
     if (this.data.mode === 'edit' && this.data.row) {
-      const r = this.data.row;
       this.form.patchValue({
-        nombre: r.nombre || '',
-        email: r.email || '',
-        rol: r.rol || 'Lector',
-        activo: r.activo !== undefined ? r.activo : true,
+        nombre: this.data.row.nombre,
+        nacionalidad: this.data.row.nacionalidad || '',
+        fecha_nacimiento: this.data.row.fecha_nacimiento || '',
       });
     }
   }
@@ -67,31 +62,23 @@ export class UsuarioDialogComponent implements OnInit {
     }
 
     const raw = this.form.getRawValue();
+    const body: AutorUpdate = {
+      nombre: raw.nombre,
+      nacionalidad: raw.nacionalidad.trim() || null,
+      fecha_nacimiento: raw.fecha_nacimiento.trim() || null,
+    };
 
     if (this.data.mode === 'create') {
-      const payload: any = {
-        nombre: raw.nombre,
-        email: raw.email,
-        rol: raw.rol,
-        activo: raw.activo
-      };
-
-      this.usuarioService.create(payload).subscribe({
+      this.autorService.create(body).subscribe({
         next: () => this.dialogRef.close(true),
         error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
       });
       return;
     }
 
-    const id = this.data.row.id_usuario || this.data.row.id;
-    const body: any = {
-      nombre: raw.nombre,
-      email: raw.email,
-      rol: raw.rol,
-      activo: raw.activo
-    };
+    const id = this.data.row!.id_autor;
 
-    this.usuarioService.update(id, body).subscribe({
+    this.autorService.update(id, body).subscribe({
       next: () => this.dialogRef.close(true),
       error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
     });
@@ -100,7 +87,7 @@ export class UsuarioDialogComponent implements OnInit {
   private msg(err: HttpErrorResponse): string {
     const d = err.error?.detail;
     if (typeof d === 'string') return d;
-    if (Array.isArray(d)) return d.map((x: any) => x.msg ?? JSON.stringify(x)).join('; ');
+    if (Array.isArray(d)) return d.map((x) => x.msg ?? JSON.stringify(x)).join('; ');
     return err.message;
   }
 }

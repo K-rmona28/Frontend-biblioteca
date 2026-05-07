@@ -1,8 +1,8 @@
 <div class="container-fluid my-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Listado de Usuarios</h2>
+    <h2>Inventario de Ejemplares</h2>
     <button mat-flat-button color="primary" (click)="nuevo()">
-      <mat-icon>person_add</mat-icon> Nuevo Usuario
+      <mat-icon>add_to_photos</mat-icon> Nuevo Ejemplar
     </button>
   </div>
 
@@ -14,36 +14,29 @@
     <div class="mat-elevation-z8 table-responsive">
       <table mat-table [dataSource]="dataSource" class="w-100">
 
-        <ng-container matColumnDef="id_usuario">
-          <th mat-header-cell *matHeaderCellDef> ID </th>
-          <td mat-cell *matCellDef="let element"> {{ element.id_usuario }} </td>
+        <ng-container matColumnDef="id_ejemplar">
+          <th mat-header-cell *matHeaderCellDef> ID Ejemplar </th>
+          <td mat-cell *matCellDef="let element"> {{ element.id_ejemplar }} </td>
         </ng-container>
 
-        <ng-container matColumnDef="nombre">
-          <th mat-header-cell *matHeaderCellDef> Nombre </th>
-          <td mat-cell *matCellDef="let element"> {{ element.nombre }} </td>
+        <ng-container matColumnDef="id_libro">
+          <th mat-header-cell *matHeaderCellDef> ID Libro </th>
+          <td mat-cell *matCellDef="let element"> {{ element.id_libro }} {{ element.libro_titulo ? '- ' + element.libro_titulo : '' }} </td>
         </ng-container>
 
-        <ng-container matColumnDef="email">
-          <th mat-header-cell *matHeaderCellDef> Correo Electrónico </th>
-          <td mat-cell *matCellDef="let element"> {{ element.email }} </td>
+        <ng-container matColumnDef="codigo_inventario">
+          <th mat-header-cell *matHeaderCellDef> Código Inventario </th>
+          <td mat-cell *matCellDef="let element"> <code>{{ element.codigo_inventario }}</code> </td>
         </ng-container>
 
-        <ng-container matColumnDef="rol">
-          <th mat-header-cell *matHeaderCellDef> Rol </th>
-          <td mat-cell *matCellDef="let element"> 
-            <span class="badge text-bg-secondary">{{ element.rol }}</span> 
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="activo">
+        <ng-container matColumnDef="estado">
           <th mat-header-cell *matHeaderCellDef> Estado </th>
           <td mat-cell *matCellDef="let element">
-            @if (element.activo) {
-              <span class="badge text-bg-success">Activo</span>
-            } @else {
-              <span class="badge text-bg-danger">Inactivo</span>
-            }
+            <span class="badge" [ngClass]="{
+              'text-bg-success': element.estado === 'Disponible',
+              'text-bg-warning': element.estado === 'Prestado',
+              'text-bg-danger': element.estado === 'Mantenimiento'
+            }">{{ element.estado }}</span>
           </td>
         </ng-container>
 

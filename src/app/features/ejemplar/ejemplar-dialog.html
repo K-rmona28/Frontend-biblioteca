@@ -1,0 +1,40 @@
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo' : 'Editar' }} Ejemplar</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="d-flex flex-column gap-3 mt-2">
+    
+    <mat-form-field appearance="outline">
+      <mat-label>Libro</mat-label>
+      <mat-select formControlName="id_libro">
+        @for (libro of libros; track libro.id_libro) {
+          <mat-option [value]="libro.id_libro">{{ libro.titulo }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.id_libro.hasError('required')) {
+        <mat-error>El libro es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Código de Inventario (Único)</mat-label>
+      <input matInput formControlName="codigo_inventario" placeholder="Ej: EJ-100293">
+      @if (form.controls.codigo_inventario.hasError('required')) {
+        <mat-error>El código de inventario es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Estado del Ejemplar</mat-label>
+      <mat-select formControlName="estado">
+        <mat-option value="Disponible">Disponible</mat-option>
+        <mat-option value="Prestado">Prestado</mat-option>
+        <mat-option value="Mantenimiento">Mantenimiento</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancelar</button>
+  <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="save()">Guardar</button>
+</mat-dialog-actions>
