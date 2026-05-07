@@ -1,5 +1,5 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,19 +7,19 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-// Ruta corregida apuntando a tu servicio real con "s" al final
 import { EditorialService } from '../../core/services/editorial.service';
-import { Editorial } from './editorial-list';
+import { EditorialRead } from '../../models/api.models';
 
 export interface EditorialDialogData {
   mode: 'create' | 'edit';
-  row?: Editorial;
+  row?: EditorialRead;
 }
 
 @Component({
   selector: 'app-editorial-dialog',
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
@@ -38,15 +38,19 @@ export class EditorialDialogComponent implements OnInit {
   readonly data = inject<EditorialDialogData>(MAT_DIALOG_DATA);
 
   readonly form = this.fb.nonNullable.group({
-    nombre: ['', [Validators.required, Validators.maxLength(100)]],
-    pais: ['', [Validators.maxLength(50)]],
+    nombre: ['', [Validators.required]],
+    direccion: [''],
+    telefono: [''],
   });
 
   ngOnInit(): void {
-    if (this.data.mode === 'edit' && this.data.row) {
+    const rowData = this.data.row as any; // Usamos "as any" para evitar problemas con direccion o telefono si el modelo es estricto
+
+    if (this.data.mode === 'edit' && rowData) {
       this.form.patchValue({
-        nombre: this.data.row.nombre,
-        pais: this.data.row.pais || '',
+        nombre: rowData.nombre,
+        direccion: rowData.direccion ?? '',
+        telefono: rowData.telefono ?? '',
       });
     }
   }
@@ -61,28 +65,18 @@ export class EditorialDialogComponent implements OnInit {
       return;
     }
 
-    const payload = this.form.getRawValue();
+    const body = this.form.getRawValue();
 
     if (this.data.mode === 'create') {
-      this.editorialService.create(payload).subscribe({
+      this.editorialService.create(body as any).subscribe({
         next: () => this.dialogRef.close(true),
-        error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
+        error: () => this.snack.open('Error al crear la editorial', 'Cerrar', { duration: 3000 }),
       });
     } else if (this.data.mode === 'edit' && this.data.row?.id_editorial) {
-      // Convertimos el ID a string usando .toString() para que coincida con tu servicio
-      const idString = this.data.row.id_editorial.toString();
-      
-      this.editorialService.update(idString, payload).subscribe({
+      this.editorialService.update(this.data.row.id_editorial, body as any).subscribe({
         next: () => this.dialogRef.close(true),
-        error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
+        error: () => this.snack.open('Error al actualizar la editorial', 'Cerrar', { duration: 3000 }),
       });
     }
-  }
-
-  private msg(err: HttpErrorResponse): string {
-    const d = err.error?.detail;
-    if (typeof d === 'string') return d;
-    if (Array.isArray(d)) return d.map((x: any) => x.msg ?? JSON.stringify(x)).join('; ');
-    return err.message;
   }
 }

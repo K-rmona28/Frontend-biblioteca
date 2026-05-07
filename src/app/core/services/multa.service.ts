@@ -1,23 +1,17 @@
-import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-import { environment } from '../../../environments/environment';
-import { MultaCreate, MultaRead, MultaUpdate } from '../models/api.models';
+import { MultaCreate, MultaRead, MultaUpdate } from '../../models/api.models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MultaService {
   private readonly http = inject(HttpClient);
-  private readonly url = `${environment.apiUrl}/multas`; 
+  private readonly url = '/api/multas'; // Ajusta según tu configuración de proxy
 
   list(): Observable<MultaRead[]> {
     return this.http.get<MultaRead[]>(this.url);
-  }
-
-  get(id: string): Observable<MultaRead> {
-    return this.http.get<MultaRead>(`${this.url}/${id}`);
   }
 
   create(body: MultaCreate): Observable<MultaRead> {

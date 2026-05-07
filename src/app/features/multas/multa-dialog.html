@@ -1,61 +1,45 @@
-<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Registrar' : 'Editar' }} Multa</h2>
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nueva Multa' : 'Editar Multa' }}</h2>
 
-<mat-dialog-content>
-  @if (loadingData) {
-    <div class="d-flex justify-content-center my-3">
+<form [formGroup]="form" (ngSubmit)="save()">
+  <mat-dialog-content class="dialog-content">
+    <div *ngIf="loading" class="spinner-container">
       <mat-spinner diameter="40"></mat-spinner>
     </div>
-  } @else {
-    <form [formGroup]="form" class="d-flex flex-column gap-3 mt-2">
-      
-      <mat-form-field appearance="outline">
-        <mat-label>Asociar a Préstamo</mat-label>
-        <mat-select formControlName="id_prestamo">
-          @for (pres of prestamos; track pres.id_prestamo) {
-            <mat-option [value]="pres.id_prestamo">
-              Préstamo #{{ pres.id_prestamo }} - {{ pres.usuario?.nombre || pres.id_usuario }}
-            </mat-option>
-          }
-        </mat-select>
-        @if (form.controls.id_prestamo.hasError('required')) {
-          <mat-error>El préstamo es obligatorio</mat-error>
-        }
-      </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Valor de la Multa ($)</mat-label>
-        <input matInput type="number" formControlName="valor" placeholder="Ej: 5000">
-        @if (form.controls.valor.hasError('required')) {
-          <mat-error>El valor es requerido</mat-error>
-        }
-        @if (form.controls.valor.hasError('min')) {
-          <mat-error>El valor debe ser mayor a 0</mat-error>
-        }
-      </mat-form-field>
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Préstamo Asociado</mat-label>
+      <mat-select formControlName="id_prestamo">
+        <mat-option *ngFor="let pres of prestamos" [value]="pres.id_prestamo">
+          Préstamo ID: {{ pres.id_prestamo }} - Usuario ID: {{ pres.id_usuario }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.controls.id_prestamo.hasError('required')">El préstamo es obligatorio</mat-error>
+    </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Fecha de Imposición</mat-label>
-        <input matInput type="date" formControlName="fecha_creacion">
-        @if (form.controls.fecha_creacion.hasError('required')) {
-          <mat-error>La fecha es obligatoria</mat-error>
-        }
-      </mat-form-field>
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Valor de la Multa</mat-label>
+      <input matInput type="number" formControlName="valor_multa">
+      <mat-error *ngIf="form.controls.valor_multa.hasError('required')">El valor es obligatorio</mat-error>
+      <mat-error *ngIf="form.controls.valor_multa.hasError('min')">El valor no puede ser negativo</mat-error>
+    </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Estado de la Multa</mat-label>
-        <mat-select formControlName="estado">
-          <mat-option value="PENDIENTE">PENDIENTE</mat-option>
-          <mat-option value="PAGADA">PAGADA</mat-option>
-        </mat-select>
-      </mat-form-field>
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Fecha de Creación</mat-label>
+      <input matInput type="date" formControlName="fecha_creacion">
+    </mat-form-field>
 
-    </form>
-  }
-</mat-dialog-content>
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Estado</mat-label>
+      <mat-select formControlName="estado">
+        <mat-option value="PENDIENTE">PENDIENTE</mat-option>
+        <mat-option value="PAGADA">PAGADA</mat-option>
+        <mat-option value="ANULADA">ANULADA</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button mat-button (click)="cancel()">Cancelar</button>
-  <button mat-flat-button color="primary" [disabled]="form.invalid || loadingData" (click)="save()">
-    Guardar
-  </button>
-</mat-dialog-actions>
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()">Cancelar</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Guardar</button>
+  </mat-dialog-actions>
+</form>

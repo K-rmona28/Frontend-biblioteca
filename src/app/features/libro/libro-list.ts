@@ -1,61 +1,55 @@
-import { HttpErrorResponse } from '@angular/common/http';
-import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common'; 
+import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { filter } from 'rxjs/operators';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 import { LibroService } from '../../core/services/libro.service';
+import { LibroDialogComponent } from './libro-dialog';
 import { LibroRead } from '../../models/api.models';
-import { LibroDialogComponent } from './libro-dialog'; 
 
 @Component({
   selector: 'app-libro-list',
+  standalone: true,
   imports: [
+    CommonModule, 
     MatTableModule,
-    MatPaginatorModule,
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
-    MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatProgressSpinnerModule,
+    MatPaginatorModule
   ],
   templateUrl: './libro-list.html',
-  styleUrl: './libro-list.scss',
 })
-export class LibroListComponent implements AfterViewInit {
+export class LibroListComponent implements OnInit {
   private readonly libroService = inject(LibroService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
-  readonly displayedColumns = ['id_libro', 'titulo', 'isbn', 'editorial', 'categoria', 'anio_publicacion', 'acciones'];
-  readonly dataSource = new MatTableDataSource<LibroRead>([]);
-  loading = true;
+  dataSource: LibroRead[] = [];
+  displayedColumns: string[] = ['id_libro', 'titulo', 'isbn', 'id_autor', 'acciones'];
+  loading = false;
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+  ngOnInit(): void {
+    this.loadData();
   }
 
-  constructor() {
-    this.reload();
-  }
-
-  reload(): void {
+  loadData(): void {
     this.loading = true;
     this.libroService.list().subscribe({
-      next: (rows) => {
-        this.dataSource.data = rows;
+      next: (data) => {
+        this.dataSource = data;
         this.loading = false;
       },
-      error: (err: HttpErrorResponse) => {
+      error: () => {
         this.loading = false;
-        this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 });
+        this.snack.open('Error al cargar libros', 'Cerrar', { duration: 3000 });
       },
     });
   }
@@ -68,32 +62,33 @@ export class LibroListComponent implements AfterViewInit {
     this.openDialog('edit', row);
   }
 
-  private openDialog(mode: 'create' | 'edit', row?: LibroRead): void {
-    this.dialog
-      .open(LibroDialogComponent, { 
-        width: '500px', 
-        data: { mode, row } 
-      })
-      .afterClosed()
-      .pipe(filter(Boolean))
-      .subscribe(() => this.reload());
-  }
+  openDialog(mode: 'create' | 'edit', row?: LibroRead): void {
+    const dialogRef = this.dialog.open(LibroDialogComponent, {
+      width: '600px',
+      data: { mode, row },
+    });
 
-  eliminar(row: LibroRead): void {
-    if (!confirm(`¿Eliminar el libro "${row.titulo}"?`)) return;
-    this.libroService.delete(row.id_libro).subscribe({
-      next: () => {
-        this.snack.open('Libro eliminado con éxito', 'OK', { duration: 3000 });
-        this.reload();
-      },
-      error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.loadData();
+        this.snack.open(
+          mode === 'create' ? 'Libro creado con éxito' : 'Libro actualizado con éxito',
+          'Cerrar',
+          { duration: 3000 }
+        );
+      }
     });
   }
 
-  private msg(err: HttpErrorResponse): string {
-    const d = err.error?.detail;
-    if (typeof d === 'string') return d;
-    if (Array.isArray(d)) return d.map((x) => x.msg ?? JSON.stringify(x)).join('; ');
-    return err.message;
+  eliminar(row: LibroRead): void {
+    if (confirm(`¿Está seguro de eliminar el libro "${row.titulo}"?`)) {
+      this.libroService.delete(row.id_libro.toString()).subscribe({
+        next: () => {
+          this.loadData();
+          this.snack.open('Libro eliminado', 'Cerrar', { duration: 3000 });
+        },
+        error: () => this.snack.open('Error al eliminar libro', 'Cerrar', { duration: 3000 }),
+      });
+    }
   }
 }

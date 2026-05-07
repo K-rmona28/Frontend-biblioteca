@@ -6,11 +6,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { CommonModule } from '@angular/common';
 
 import { MultaService } from '../../core/services/multa.service';
 import { PrestamoService } from '../../core/services/prestamo.service';
-import { MultaRead, MultaUpdate, PrestamoRead } from '../../models/api.models';
+import { MultaRead, PrestamoRead } from '../../models/api.models';
 
 export interface MultaDialogData {
   mode: 'create' | 'edit';
@@ -21,12 +23,14 @@ export interface MultaDialogData {
   selector: 'app-multa-dialog',
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatProgressSpinnerModule,
     MatSnackBarModule,
   ],
   templateUrl: './multa-dialog.html',
@@ -41,34 +45,41 @@ export class MultaDialogComponent implements OnInit {
   readonly data = inject<MultaDialogData>(MAT_DIALOG_DATA);
 
   prestamos: PrestamoRead[] = [];
-  loadingData = true;
+  loading = false;
 
   readonly form = this.fb.nonNullable.group({
     id_prestamo: ['', [Validators.required]],
-    valor: [0, [Validators.required, Validators.min(1)]],
-    fecha_creacion: ['', [Validators.required]],
+    valor_multa: [0, [Validators.required, Validators.min(0)]],
+    fecha_creacion: [new Date().toISOString().substring(0, 10), [Validators.required]],
     estado: ['PENDIENTE', [Validators.required]],
   });
 
   ngOnInit(): void {
+    this.cargarPrestamos();
+    
+    // Convertimos row a "any" temporalmente para evitar cualquier error de tipo al parchar el formulario
+    const rowData = this.data.row as any;
+    
+    if (this.data.mode === 'edit' && rowData) {
+      this.form.patchValue({
+        id_prestamo: rowData.id_prestamo,
+        valor_multa: rowData.valor_multa,
+        fecha_creacion: rowData.fecha_creacion ? rowData.fecha_creacion.substring(0, 10) : '',
+        estado: rowData.estado,
+      });
+    }
+  }
+
+  cargarPrestamos(): void {
+    this.loading = true;
     this.prestamoService.list().subscribe({
       next: (res) => {
         this.prestamos = res;
-        this.loadingData = false;
-
-        if (this.data.mode === 'edit' && this.data.row) {
-          const r = this.data.row as any;
-          this.form.patchValue({
-            id_prestamo: r.id_prestamo,
-            valor: r.valor,
-            fecha_creacion: r.fecha_creacion ? r.fecha_creacion.split('T')[0] : '',
-            estado: r.estado || 'PENDIENTE',
-          });
-        }
+        this.loading = false;
       },
-      error: (err: HttpErrorResponse) => {
-        this.loadingData = false;
-        this.snack.open('Error al cargar la lista de préstamos', 'Cerrar', { duration: 6000 });
+      error: () => {
+        this.loading = false;
+        this.snack.open('Error al cargar préstamos', 'Cerrar', { duration: 3000 });
       }
     });
   }
@@ -86,26 +97,37 @@ export class MultaDialogComponent implements OnInit {
     const payload = this.form.getRawValue();
 
     if (this.data.mode === 'create') {
-      this.multaService.create(payload).subscribe({
+      const body = {
+        id_prestamo: payload.id_prestamo,
+        valor_multa: payload.valor_multa,
+        fecha_creacion: payload.fecha_creacion,
+        estado: payload.estado
+      } as any;
+
+      this.multaService.create(body).subscribe({
         next: () => this.dialogRef.close(true),
         error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
       });
-      return;
+    } else if (this.data.mode === 'edit' && this.data.row?.id_multa) {
+      const body = {
+        id_prestamo: payload.id_prestamo,
+        valor_multa: payload.valor_multa,
+        fecha_creacion: payload.fecha_creacion,
+        estado: payload.estado,
+        id_usuario_edita: 'SISTEMA'
+      } as any;
+
+      this.multaService.update(this.data.row.id_multa, body).subscribe({
+        next: () => this.dialogRef.close(true),
+        error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
+      });
     }
-
-    const id = this.data.row!.id_multa;
-    const body: MultaUpdate = payload;
-
-    this.multaService.update(id, body).subscribe({
-      next: () => this.dialogRef.close(true),
-      error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
-    });
   }
 
   private msg(err: HttpErrorResponse): string {
     const d = err.error?.detail;
     if (typeof d === 'string') return d;
-    if (Array.isArray(d)) return d.map((x) => x.msg ?? JSON.stringify(x)).join('; ');
+    if (Array.isArray(d)) return d.map((x: any) => x.msg ?? JSON.stringify(x)).join('; ');
     return err.message;
   }
 }

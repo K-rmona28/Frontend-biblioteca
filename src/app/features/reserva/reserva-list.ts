@@ -26,7 +26,7 @@ import { ReservaDialogComponent } from './reserva-dialog';
     MatProgressSpinnerModule,
     MatSnackBarModule,
   ],
-  templateUrl: './reserva-list.html',
+  templateUrl: './reserva.list.html', // <-- CORREGIDO: Se cambió el guion por un punto para que coincida con tu archivo físico
   styleUrl: './reserva-list.scss',
 })
 export class ReservaListComponent implements AfterViewInit {

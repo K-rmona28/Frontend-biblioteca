@@ -1,104 +1,94 @@
-import { HttpErrorResponse } from '@angular/common/http';
-import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common'; 
+import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { filter } from 'rxjs/operators';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 import { MultaService } from '../../core/services/multa.service';
+import { MultaDialogComponent } from './multa-dialog';
 import { MultaRead } from '../../models/api.models';
-import { MultaDialogComponent, MultaDialogData } from './multa-dialog';
 
 @Component({
   selector: 'app-multa-list',
+  standalone: true,
   imports: [
+    CommonModule, 
     MatTableModule,
-    MatPaginatorModule,
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
-    MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatProgressSpinnerModule,
+    MatPaginatorModule
   ],
   templateUrl: './multa-list.html',
-  styleUrl: './multa-list.scss',
 })
-export class MultaListComponent implements AfterViewInit {
+export class MultaListComponent implements OnInit {
   private readonly multaService = inject(MultaService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
-  readonly displayedColumns = [
-    'id_multa',
-    'id_prestamo',
-    'valor_multa',
-    'fecha_creacion',
-    'estado_pago',
-    'acciones',
-  ];
-  readonly dataSource = new MatTableDataSource<MultaRead>([]);
+  dataSource: MultaRead[] = [];
+  displayedColumns: string[] = ['id_multa', 'id_prestamo', 'valor_multa', 'fecha_creacion', 'estado', 'acciones'];
+  loading = false;
 
-  loading = true;
-
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+  ngOnInit(): void {
+    this.loadData();
   }
 
-  constructor() {
-    this.reload();
-  }
-
-  reload(): void {
+  loadData(): void {
     this.loading = true;
     this.multaService.list().subscribe({
-      next: (rows) => {
-        this.dataSource.data = rows;
+      next: (data) => {
+        this.dataSource = data;
         this.loading = false;
       },
-      error: (err: HttpErrorResponse) => {
+      error: () => {
         this.loading = false;
-        this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 });
+        this.snack.open('Error al cargar multas', 'Cerrar', { duration: 3000 });
       },
     });
   }
 
   nuevo(): void {
-    this.openDialog({ mode: 'create' });
+    this.openDialog('create');
   }
 
   editar(row: MultaRead): void {
-    this.openDialog({ mode: 'edit', row });
+    this.openDialog('edit', row);
   }
 
-  private openDialog(data: MultaDialogData): void {
-    this.dialog
-      .open(MultaDialogComponent, { width: '520px', data })
-      .afterClosed()
-      .pipe(filter(Boolean))
-      .subscribe(() => this.reload());
-  }
+  openDialog(mode: 'create' | 'edit', row?: MultaRead): void {
+    const dialogRef = this.dialog.open(MultaDialogComponent, {
+      width: '500px',
+      data: { mode, row },
+    });
 
-  eliminar(row: MultaRead): void {
-    if (!confirm(`¿Eliminar multa con ID ${row.id_multa}?`)) return;
-    this.multaService.delete(row.id_multa).subscribe({
-      next: () => {
-        this.snack.open('Multa eliminada con éxito', 'OK', { duration: 3000 });
-        this.reload();
-      },
-      error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.loadData();
+        this.snack.open(
+          mode === 'create' ? 'Multa registrada' : 'Multa actualizada',
+          'Cerrar',
+          { duration: 3000 }
+        );
+      }
     });
   }
 
-  private msg(err: HttpErrorResponse): string {
-    const d = err.error?.detail;
-    if (typeof d === 'string') return d;
-    if (Array.isArray(d)) return d.map((x) => x.msg ?? JSON.stringify(x)).join('; ');
-    return err.message;
+  eliminar(row: MultaRead): void {
+    if (confirm(`¿Está seguro de eliminar esta multa por $${row.valor_multa}?`)) {
+      this.multaService.delete(row.id_multa.toString()).subscribe({
+        next: () => {
+          this.loadData();
+          this.snack.open('Multa eliminada', 'Cerrar', { duration: 3000 });
+        },
+        error: () => this.snack.open('Error al eliminar la multa', 'Cerrar', { duration: 3000 }),
+      });
+    }
   }
 }

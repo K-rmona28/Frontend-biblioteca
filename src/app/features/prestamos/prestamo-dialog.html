@@ -1,60 +1,53 @@
-<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo' : 'Editar' }} Préstamo</h2>
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo Préstamo' : 'Editar Préstamo' }}</h2>
 
-<mat-dialog-content>
-  @if (loadingData) {
-    <div class="d-flex justify-content-center my-3">
+<form [formGroup]="form" (ngSubmit)="save()">
+  <mat-dialog-content class="dialog-content">
+    <div *ngIf="loading" class="spinner-container">
       <mat-spinner diameter="40"></mat-spinner>
     </div>
-  } @else {
-    <form [formGroup]="form" class="d-flex flex-column gap-3 mt-2">
-      
-      <mat-form-field appearance="outline">
-        <mat-label>Usuario</mat-label>
-        <mat-select formControlName="id_usuario">
-          @for (usr of usuarios; track usr.id_usuario) {
-            <mat-option [value]="usr.id_usuario">{{ usr.nombre }}</mat-option>
-          }
-        </mat-select>
-        @if (form.controls.id_usuario.hasError('required')) {
-          <mat-error>El usuario es obligatorio</mat-error>
-        }
-      </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Libro</mat-label>
-        <mat-select formControlName="id_libro">
-          @for (libro of libros; track libro.id_libro) {
-            <mat-option [value]="libro.id_libro">{{ libro.titulo }}</mat-option>
-          }
-        </mat-select>
-        @if (form.controls.id_libro.hasError('required')) {
-          <mat-error>El libro es obligatorio</mat-error>
-        }
-      </mat-form-field>
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Usuario</mat-label>
+      <mat-select formControlName="id_usuario">
+        <mat-option *ngFor="let usr of usuarios" [value]="usr.id_usuario">
+          ID: {{ usr.id_usuario }} ({{ usr.correo }})
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.controls.id_usuario.hasError('required')">El usuario es requerido</mat-error>
+    </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Fecha de Préstamo</mat-label>
-        <input matInput type="date" formControlName="fecha_prestamo">
-        @if (form.controls.fecha_prestamo.hasError('required')) {
-          <mat-error>La fecha de préstamo es requerida</mat-error>
-        }
-      </mat-form-field>
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Ejemplar (Libro)</mat-label>
+      <mat-select formControlName="id_ejemplar">
+        <mat-option *ngFor="let ej of ejemplares" [value]="ej.id_ejemplar">
+          ID Ejemplar: {{ ej.id_ejemplar }} - Estado: {{ ej.estado }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.controls.id_ejemplar.hasError('required')">El ejemplar es requerido</mat-error>
+    </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Fecha Límite de Entrega</mat-label>
-        <input matInput type="date" formControlName="fecha_devolucion_esperada">
-        @if (form.controls.fecha_devolucion_esperada.hasError('required')) {
-          <mat-error>La fecha límite es requerida</mat-error>
-        }
-      </mat-form-field>
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Fecha Préstamo</mat-label>
+      <input matInput type="date" formControlName="fecha_prestamo">
+    </mat-form-field>
 
-    </form>
-  }
-</mat-dialog-content>
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Fecha Devolución Propuesta</mat-label>
+      <input matInput type="date" formControlName="fecha_devolucion_propuesta">
+    </mat-form-field>
 
-<mat-dialog-actions align="end">
-  <button mat-button (click)="cancel()">Cancelar</button>
-  <button mat-flat-button color="primary" [disabled]="form.invalid || loadingData" (click)="save()">
-    Guardar
-  </button>
-</mat-dialog-actions>
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Estado</mat-label>
+      <mat-select formControlName="estado">
+        <mat-option value="ACTIVO">ACTIVO</mat-option>
+        <mat-option value="DEVUELTO">DEVUELTO</mat-option>
+        <mat-option value="VENCIDO">VENCIDO</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()">Cancelar</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Guardar</button>
+  </mat-dialog-actions>
+</form>
