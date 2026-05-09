@@ -10,11 +10,11 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { filter } from 'rxjs/operators';
 
-import { UsuarioService } from '../../core/services/usuario.service';
-import { UsuarioDialogComponent } from './usuario-dialog';
+import { EjemplarService, Ejemplar } from '../../core/services/ejemplar.service';
+import { EjemplarDialogComponent } from './ejemplar-dialog';
 
 @Component({
-  selector: 'app-usuario-list',
+  selector: 'app-ejemplar-list',
   standalone: true,
   imports: [
     CommonModule,
@@ -26,16 +26,16 @@ import { UsuarioDialogComponent } from './usuario-dialog';
     MatProgressSpinnerModule,
     MatSnackBarModule,
   ],
-  templateUrl: './usuario-list.html',
-  styleUrl: './usuario-list.scss',
+  templateUrl: './ejemplar-list.html',
+  styleUrl: './ejemplar-list.scss',
 })
-export class UsuarioListComponent implements AfterViewInit {
-  private readonly usuarioService = inject(UsuarioService);
+export class EjemplarListComponent implements AfterViewInit {
+  private readonly ejemplarService = inject(EjemplarService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
-  readonly displayedColumns = ['id_usuario', 'nombre', 'email', 'rol', 'activo', 'acciones'];
-  readonly dataSource = new MatTableDataSource<any>([]);
+  readonly displayedColumns = ['id_ejemplar', 'id_libro', 'codigo_inventario', 'estado', 'acciones'];
+  readonly dataSource = new MatTableDataSource<Ejemplar>([]);
   loading = true;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -50,8 +50,8 @@ export class UsuarioListComponent implements AfterViewInit {
 
   reload(): void {
     this.loading = true;
-    this.usuarioService.list().subscribe({
-      next: (rows: any) => {
+    this.ejemplarService.list().subscribe({
+      next: (rows) => {
         this.dataSource.data = rows;
         this.loading = false;
       },
@@ -66,26 +66,27 @@ export class UsuarioListComponent implements AfterViewInit {
     this.openDialog('create');
   }
 
-  editar(row: any): void {
+  editar(row: Ejemplar): void {
     this.openDialog('edit', row);
   }
 
-  private openDialog(mode: 'create' | 'edit', row?: any): void {
+  private openDialog(mode: 'create' | 'edit', row?: Ejemplar): void {
     this.dialog
-      .open(UsuarioDialogComponent, { width: '500px', data: { mode, row } })
+      .open(EjemplarDialogComponent, { width: '500px', data: { mode, row } })
       .afterClosed()
       .pipe(filter(Boolean))
       .subscribe(() => this.reload());
   }
 
-  eliminar(row: any): void {
-    const nombreUsuario = row.nombre || row.email || 'Usuario';
-    if (!confirm(`¿Eliminar al usuario "${nombreUsuario}"?`)) return;
-    
-    const id = row.id_usuario || row.id;
-    this.usuarioService.delete(id).subscribe({
+  eliminar(row: Ejemplar): void {
+    if (!confirm(`¿Eliminar el ejemplar con código "${row.codigo_inventario}"?`)) return;
+
+    const id = row.id_ejemplar;
+    if (!id) return;
+
+    this.ejemplarService.delete(id.toString()).subscribe({
       next: () => {
-        this.snack.open('Usuario eliminado con éxito', 'OK', { duration: 3000 });
+        this.snack.open('Ejemplar eliminado con éxito', 'OK', { duration: 3000 });
         this.reload();
       },
       error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),

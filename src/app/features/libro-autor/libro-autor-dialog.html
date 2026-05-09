@@ -1,0 +1,36 @@
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nueva' : 'Editar' }} Relación Libro-Autor</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="d-flex flex-column gap-3 mt-2">
+    
+    <mat-form-field appearance="outline">
+      <mat-label>Libro</mat-label>
+      <mat-select formControlName="id_libro">
+        @for (libro of libros; track libro.id_libro) {
+          <mat-option [value]="libro.id_libro">{{ libro.titulo }} (ID: {{ libro.id_libro }})</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.id_libro.hasError('required')) {
+        <mat-error>El libro es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Autor</mat-label>
+      <mat-select formControlName="id_autor">
+        @for (autor of autores; track autor.id_autor) {
+          <mat-option [value]="autor.id_autor">{{ autor.nombre }} (ID: {{ autor.id_autor }})</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.id_autor.hasError('required')) {
+        <mat-error>El autor es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancelar</button>
+  <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="save()">Guardar</button>
+</mat-dialog-actions>
