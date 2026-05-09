@@ -38,6 +38,19 @@
       <a
         mat-list-item
         class="nav-item"
+        routerLink="libros"
+        routerLinkActive="active-link"
+        [matTooltip]="sidebarCollapsed() ? 'Libros' : ''"
+        matTooltipPosition="right"
+        [matTooltipDisabled]="!sidebarCollapsed()"
+      >
+        <mat-icon matListItemIcon class="nav-item__icon">library_books</mat-icon>
+        <span matListItemTitle class="nav-label">Libros</span>
+      </a>
+
+      <a
+        mat-list-item
+        class="nav-item"
         routerLink="prestamos"
         routerLinkActive="active-link"
         [matTooltip]="sidebarCollapsed() ? 'Préstamos' : ''"
@@ -78,6 +91,7 @@
       </button>
     </div>
   </mat-sidenav>
+
   <mat-sidenav-content class="main-column">
     <mat-toolbar class="top-bar">
       <button

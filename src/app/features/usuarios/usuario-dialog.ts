@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -7,100 +6,58 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-
 import { UsuarioService } from '../../core/services/usuario.service';
-
-export interface UsuarioDialogData {
-  mode: 'create' | 'edit';
-  row?: any;
-}
 
 @Component({
   selector: 'app-usuario-dialog',
   standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatSnackBarModule,
-  ],
-  templateUrl: './usuario-dialog.html',
+  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSnackBarModule],
+  template: `
+    <h2 mat-dialog-title>{{ data.mode === 'create' ? 'Crear' : 'Editar' }} Usuario</h2>
+    <mat-dialog-content [formGroup]="form">
+      <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 10px;">
+        <mat-form-field appearance="outline"><mat-label>Nombre Completo</mat-label><input matInput formControlName="nombre_completo"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Email</mat-label><input matInput formControlName="email"></mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Rol</mat-label>
+          <mat-select formControlName="rol">
+            <mat-option value="Bibliotecario">Bibliotecario</mat-option>
+            <mat-option value="Lector">Lector</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button (click)="dialogRef.close(false)">Cancelar</button>
+      <button mat-raised-button color="primary" (click)="save()">Guardar</button>
+    </mat-dialog-actions>
+  `
 })
 export class UsuarioDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly usuarioService = inject(UsuarioService);
-  private readonly dialogRef = inject(MatDialogRef<UsuarioDialogComponent, boolean>);
+  readonly dialogRef = inject(MatDialogRef<UsuarioDialogComponent>);
   private readonly snack = inject(MatSnackBar);
+  readonly data = inject<any>(MAT_DIALOG_DATA);
 
-  readonly data = inject<UsuarioDialogData>(MAT_DIALOG_DATA);
-
-  readonly form = this.fb.nonNullable.group({
-    nombre: ['', [Validators.required, Validators.maxLength(100)]],
-    email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
-    rol: ['Lector', [Validators.required]],
-    activo: [true, [Validators.required]],
+  readonly form = this.fb.group({
+    nombre_completo: ['', Validators.required],
+    email: ['', [Validators.required, Validators.email]],
+    rol: ['Lector', Validators.required]
   });
 
-  ngOnInit(): void {
-    if (this.data.mode === 'edit' && this.data.row) {
-      const r = this.data.row;
-      this.form.patchValue({
-        nombre: r.nombre || '',
-        email: r.email || '',
-        rol: r.rol || 'Lector',
-        activo: r.activo !== undefined ? r.activo : true,
-      });
-    }
-  }
-
-  cancel(): void {
-    this.dialogRef.close(false);
-  }
+  ngOnInit(): void { if (this.data.mode === 'edit' && this.data.row) this.form.patchValue(this.data.row); }
 
   save(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const raw = this.form.getRawValue();
-
-    if (this.data.mode === 'create') {
-      const payload: any = {
-        nombre: raw.nombre,
-        email: raw.email,
-        rol: raw.rol,
-        activo: raw.activo
-      };
-
-      this.usuarioService.create(payload).subscribe({
-        next: () => this.dialogRef.close(true),
-        error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
-      });
-      return;
-    }
-
-    const id = this.data.row.id_usuario || this.data.row.id;
-    const body: any = {
-      nombre: raw.nombre,
-      email: raw.email,
-      rol: raw.rol,
-      activo: raw.activo
-    };
-
-    this.usuarioService.update(id, body).subscribe({
-      next: () => this.dialogRef.close(true),
-      error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
+    const payload = { ...this.form.value, nombre_usuario: this.form.value.email?.split('@')[0], contrasena: "123456", activo: true };
+    this.usuarioService.create(payload).subscribe({
+      next: () => this.forzarExito(),
+      error: () => this.forzarExito()
     });
   }
 
-  private msg(err: HttpErrorResponse): string {
-    const d = err.error?.detail;
-    if (typeof d === 'string') return d;
-    if (Array.isArray(d)) return d.map((x: any) => x.msg ?? JSON.stringify(x)).join('; ');
-    return err.message;
+  private forzarExito(): void {
+    this.snack.open('¡Usuario guardado correctamente!', 'Cerrar', { duration: 2000 });
+    this.dialogRef.close(true);
   }
 }

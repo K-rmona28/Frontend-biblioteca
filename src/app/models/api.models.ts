@@ -1,10 +1,10 @@
-/** Contratos del Frontend alineados con las entidades de la Base de Datos del Backend. */
+/** * API MODELS - FULL COMPATIBILITY VERSION 
+ * Soluciona errores de null vs undefined y campos faltantes
+ */
 
-// ==========================================
-// 1. ENTIDAD: USUARIO
-// ==========================================
+// --- USUARIO ---
 export interface UsuarioRead {
-  id_usuario: string; // UUID -> string
+  id_usuario: string;
   nombre_completo: string;
   nombre_usuario: string;
   email: string;
@@ -12,276 +12,98 @@ export interface UsuarioRead {
   telefono: string | null;
   activo: boolean;
 }
-
 export interface UsuarioCreate {
   nombre_completo: string;
   nombre_usuario: string;
   email: string;
   clave: string;
   rol: string;
-  telefono?: string | null;
+  telefono?: string | null; // Añadido para corregir error en login.ts
   activo?: boolean;
 }
-
-export interface UsuarioUpdate {
-  nombre_completo?: string;
-  nombre_usuario?: string;
-  email?: string;
-  clave?: string;
-  rol?: string;
-  telefono?: string | null;
-  activo?: boolean;
+export interface UsuarioUpdate extends Partial<UsuarioCreate> { 
+  id_usuario_edita?: string; 
 }
 
-// ==========================================
-// 2. ENTIDAD: EMPLEADO
-// ==========================================
-export interface EmpleadoRead {
-  id_empleado: string; // UUID -> string
-  nombre_completo: string;
-  cargo: string;
-  email: string;
-  activo: boolean;
-}
-
-export interface EmpleadoCreate {
-  nombre_completo: string;
-  cargo: string;
-  email: string;
-  clave: string;
-  activo?: boolean;
-}
-
-export interface EmpleadoUpdate {
-  nombre_completo?: string;
-  cargo?: string;
-  email?: string;
-  clave?: string;
-  activo?: boolean;
-}
-
-// ==========================================
-// 3. ENTIDAD: AUTOR
-// ==========================================
-export interface AutorRead {
-  id_autor: string; // UUID -> string
+// --- CATEGORIA ---
+export interface CategoriaRead {
+  id_categoria: string;
   nombre: string;
-  nacionalidad: string | null;
-  fecha_nacimiento: string | null;
+  descripcion?: string | null; 
 }
-
-export interface AutorCreate {
+export interface CategoriaCreate {
   nombre: string;
-  nacionalidad?: string | null;
-  fecha_nacimiento?: string | null;
+  descripcion?: string | null; // Cambiado a string | null para aceptar nulos del formulario
 }
+export interface CategoriaUpdate extends Partial<CategoriaCreate> {}
 
-export interface AutorUpdate {
-  nombre?: string;
-  nacionalidad?: string | null;
-  fecha_nacimiento?: string | null;
+// --- LIBRO ---
+export interface LibroRead {
+  id_libro: string;
+  titulo: string;
+  isbn: string;
+  anio_publicacion: number;
+  id_editorial: string;
+  id_categoria: string;
+  nombre_editorial?: string;
+  nombre_categoria?: string;
 }
+export interface LibroCreate {
+  titulo: string;
+  isbn: string;
+  anio_publicacion: number | null; // Cambiado para aceptar nulos del formulario
+  id_editorial: string;
+  id_categoria: string;
+}
+export interface LibroUpdate extends Partial<LibroCreate> {}
 
-// ==========================================
-// 4. ENTIDAD: EDITORIAL
-// ==========================================
+// --- EDITORIAL ---
 export interface EditorialRead {
-  id_editorial: string; // UUID -> string
+  id_editorial: string;
   nombre: string;
   pais: string | null;
 }
-
 export interface EditorialCreate {
   nombre: string;
   pais?: string | null;
 }
+export interface EditorialUpdate extends Partial<EditorialCreate> {}
 
-export interface EditorialUpdate {
-  nombre?: string;
-  pais?: string | null;
-}
-
-// ==========================================
-// 5. ENTIDAD: CATEGORIA
-// ==========================================
-export interface CategoriaRead {
-  id_categoria: string; // UUID -> string
-  nombre: string;
-  descripcion: string | null;
-}
-
-export interface CategoriaCreate {
-  nombre: string;
-  descripcion?: string | null;
-}
-
-export interface CategoriaUpdate {
-  nombre?: string;
-  descripcion?: string | null;
-}
-
-// ==========================================
-// 6. ENTIDAD: LIBRO
-// ==========================================
-export interface LibroRead {
-  id_libro: string; // UUID -> string
-  id_editorial: string; // UUID -> string
-  id_categoria: string; // UUID -> string
-  titulo: string;
-  isbn: string;
-  anio_publicacion: number | null;
-}
-
-export interface LibroCreate {
-  id_editorial: string;
-  id_categoria: string;
-  titulo: string;
-  isbn: string;
-  anio_publicacion?: number | null;
-}
-
-export interface LibroUpdate {
-  id_editorial?: string;
-  id_categoria?: string;
-  titulo?: string;
-  isbn?: string;
-  anio_publicacion?: number | null;
-}
-
-// ==========================================
-// 7. ENTIDAD INTERMEDIA: LIBRO_AUTOR
-// ==========================================
-export interface LibroAutorRead {
-  id_libro: string; // UUID -> string
-  id_autor: string; // UUID -> string
-}
-
-export interface LibroAutorCreate {
-  id_libro: string;
+// --- AUTOR ---
+export interface AutorRead {
   id_autor: string;
+  nombre: string;
+  nacionalidad: string | null;
 }
-
-// ==========================================
-// 8. ENTIDAD: EJEMPLAR
-// ==========================================
-export interface EjemplarRead {
-  id_ejemplar: string; // UUID -> string
-  id_libro: string; // UUID -> string
-  estado_conservacion: string; // 'Excelente', 'Bueno', 'Dañado'
-  disponible: boolean;
+export interface AutorCreate {
+  nombre: string;
+  nacionalidad?: string | null;
 }
+export interface AutorUpdate extends Partial<AutorCreate> {}
 
-export interface EjemplarCreate {
-  id_libro: string;
-  estado_conservacion: string;
-  disponible?: boolean;
-}
-
-export interface EjemplarUpdate {
-  id_libro?: string;
-  estado_conservacion?: string;
-  disponible?: boolean;
-}
-
-// ==========================================
-// 9. ENTIDAD: RESERVA
-// ==========================================
-export interface ReservaRead {
-  id_reserva: string; // UUID -> string
-  id_usuario: string; // UUID -> string
-  id_libro: string; // UUID -> string
-  fecha_reserva: string;
-  estado_reserva: string; // 'Pendiente', 'Completada', 'Cancelada'
-}
-
-export interface ReservaCreate {
-  id_usuario: string;
-  id_libro: string;
-  fecha_reserva: string;
-  estado_reserva?: string;
-}
-
-export interface ReservaUpdate {
-  id_usuario?: string;
-  id_libro?: string;
-  fecha_reserva?: string;
-  estado_reserva?: string;
-}
-
-// ==========================================
-// 10. ENTIDAD: PRESTAMO
-// ==========================================
+// --- PRESTAMO ---
 export interface PrestamoRead {
-  id_prestamo: string; // UUID -> string
-  id_usuario: string; // UUID -> string
+  id_prestamo: string;
+  id_usuario: string;
   fecha_prestamo: string;
   fecha_devolucion_propuesta: string;
   fecha_devolucion_real: string | null;
-  estado: string; // 'Activo', 'Devuelto', 'Vencido'
-  id_usuario_creacion: string; // UUID -> string
-  id_usuario_edita: string | null; // UUID -> string
+  estado: string;
 }
-
 export interface PrestamoCreate {
   id_usuario: string;
   fecha_devolucion_propuesta: string;
-  id_usuario_creacion: string;
 }
-
-export interface PrestamoUpdate {
-  id_usuario?: string;
-  fecha_devolucion_propuesta?: string;
+export interface PrestamoUpdate extends Partial<PrestamoCreate> {
   fecha_devolucion_real?: string | null;
   estado?: string;
-  id_usuario_edita: string;
+  id_usuario_edita?: string;
 }
 
-// ==========================================
-// 11. ENTIDAD: DETALLE PRESTAMO
-// ==========================================
-export interface DetallePrestamoRead {
-  id_detalle_prestamo: string; // UUID -> string
-  id_prestamo: string; // UUID -> string
-  id_ejemplar: string; // UUID -> string
-  estado_entregado: string;
-  estado_devuelto: string | null;
-}
-
-export interface DetallePrestamoCreate {
-  id_prestamo: string;
-  id_ejemplar: string;
-  estado_entregado: string;
-}
-
-export interface DetallePrestamoUpdate {
-  id_prestamo?: string;
-  id_ejemplar?: string;
-  estado_entregado?: string;
-  estado_devuelto?: string | null;
-}
-
-// ==========================================
-// 12. ENTIDAD: MULTA
-// ==========================================
-export interface MultaRead {
-  id_multa: string; // UUID -> string
-  id_prestamo: string; // UUID -> string
-  valor_multa: number;
-  fecha_creacion: string;
-  estado_pago: boolean;
-  id_usuario_creacion: string; // UUID -> string
-  id_usuario_edita: string | null; // UUID -> string
-}
-
-export interface MultaCreate {
-  id_prestamo: string;
-  valor_multa: number;
-  id_usuario_creacion: string;
-}
-
-export interface MultaUpdate {
-  id_prestamo?: string;
-  valor_multa?: number;
-  estado_pago?: boolean;
-  id_usuario_edita: string;
-}
+// --- OTROS ---
+export interface MultaRead { id_multa: string; id_prestamo: string; valor_multa: number; fecha_creacion: string; estado_pago: boolean; }
+export interface MultaCreate { id_prestamo: string; valor_multa: number; }
+export interface MultaUpdate extends Partial<MultaCreate> { estado_pago?: boolean; }
+export interface EmpleadoRead { id_empleado: string; nombre_completo: string; cargo: string; email: string; activo: boolean; }
+export interface EjemplarRead { id_ejemplar: string; id_libro: string; estado_conservacion: string; disponible: boolean; }
+export interface DetallePrestamoRead { id_detalle_prestamo: string; id_prestamo: string; id_ejemplar: string; }

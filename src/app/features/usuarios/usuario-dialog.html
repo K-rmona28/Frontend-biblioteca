@@ -1,33 +1,24 @@
-<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo' : 'Editar' }} Usuario</h2>
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo Usuario' : 'Editar Usuario' }}</h2>
 
 <mat-dialog-content>
-  <form [formGroup]="form" class="d-flex flex-column gap-3 mt-2">
-
+  <form [formGroup]="form" class="grid grid-cols-2 gap-4 pt-2">
+    
     <mat-form-field appearance="outline">
       <mat-label>Nombre Completo</mat-label>
-      <input matInput formControlName="nombre" placeholder="Ej: Juan Pérez">
-      @if (form.controls.nombre.hasError('required')) {
-        <mat-error>El nombre es obligatorio</mat-error>
-      }
+      <input matInput formControlName="nombre_completo" placeholder="Ej. Alejandra Carmona">
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Correo Electrónico</mat-label>
-      <input matInput type="email" formControlName="email" placeholder="Ej: juan@correo.com">
-      @if (form.controls.email.hasError('required')) {
-        <mat-error>El correo es obligatorio</mat-error>
-      }
-      @if (form.controls.email.hasError('email')) {
-        <mat-error>Debe ingresar un formato de correo válido</mat-error>
-      }
+      <input matInput formControlName="email" placeholder="ejemplo@correo.com">
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Rol del Sistema</mat-label>
       <mat-select formControlName="rol">
-        <mat-option value="Administrador">Administrador</mat-option>
-        <mat-option value="Bibliotecario">Bibliotecario</mat-option>
+        <mat-option value="Admin">Admin</mat-option>
         <mat-option value="Lector">Lector</mat-option>
+        <mat-option value="Bibliotecario">Bibliotecario</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -44,7 +35,5 @@
 
 <mat-dialog-actions align="end">
   <button mat-button (click)="cancel()">Cancelar</button>
-  <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="save()">
-    Guardar
-  </button>
+  <button mat-flat-button color="primary" (click)="save()" [disabled]="form.invalid">Guardar</button>
 </mat-dialog-actions>
